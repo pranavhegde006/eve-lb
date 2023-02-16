@@ -388,6 +388,8 @@ Network::FilterStatus Filter::establishUpstreamConnection() {
 
   ENVOY_CONN_LOG(debug, "Creating connection to cluster {}", read_callbacks_->connection(),
                  cluster_name);
+  
+  // ENVOY_CONN_LOG("HELLO WORLD");
 
   const Upstream::ClusterInfoConstSharedPtr& cluster = thread_local_cluster->info();
   getStreamInfo().setUpstreamClusterInfo(cluster);
@@ -546,7 +548,7 @@ void Filter::onGenericPoolReady(StreamInfo::StreamInfo* info,
 const Router::MetadataMatchCriteria* Filter::metadataMatchCriteria() {
   const Router::MetadataMatchCriteria* route_criteria =
       (route_ != nullptr) ? route_->metadataMatchCriteria() : nullptr;
-
+  // getStreamInfo()
   const auto& request_metadata = getStreamInfo().dynamicMetadata().filter_metadata();
   const auto filter_it = request_metadata.find(Envoy::Config::MetadataFilters::get().ENVOY_LB);
 
@@ -669,6 +671,8 @@ Network::FilterStatus Filter::onNewConnection() {
         [this]() -> void { onAccessLogFlushInterval(); });
     resetAccessLogFlushTimer();
   }
+
+  ENVOY_LOG(debug, "destroying listener manager");
 
   // Set UUID for the connection. This is used for logging and tracing.
   getStreamInfo().setStreamIdProvider(

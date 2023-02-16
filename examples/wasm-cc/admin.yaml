@@ -1,0 +1,7 @@
+access_log:
+  - name: envoy.file_access_log
+    config:
+      path: /dev/stdout
+error_log:
+  - name: envoy.stderr
+    config: {}

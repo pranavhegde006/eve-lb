@@ -46,6 +46,8 @@ void TcpListenerImpl::onSocketEvent(short flags) {
       PANIC(fmt::format("listener accept failure: {}", errorDetails(errno)));
     }
 
+        // ENVOY_LOG_MISC(info, "New socket opened pranav");
+
     sockaddr_storage remote_addr;
     socklen_t remote_addr_len = sizeof(remote_addr);
 

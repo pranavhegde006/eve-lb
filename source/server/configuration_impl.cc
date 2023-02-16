@@ -95,6 +95,7 @@ void MainImpl::initialize(const envoy::config::bootstrap::v3::Bootstrap& bootstr
   }
 
   ENVOY_LOG(info, "loading {} cluster(s)", bootstrap.static_resources().clusters().size());
+  ENVOY_LOG(debug, "HELLO WORLD");
   cluster_manager_ = cluster_manager_factory.clusterManagerFromProto(bootstrap);
 
   const auto& listeners = bootstrap.static_resources().listeners();

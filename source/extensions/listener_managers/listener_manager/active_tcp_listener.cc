@@ -86,6 +86,8 @@ void ActiveTcpListener::onAccept(Network::ConnectionSocketPtr&& socket) {
     return;
   }
 
+  ENVOY_LOG(debug, "pranav logs active listener");
+
   onAcceptWorker(std::move(socket), config_->handOffRestoredDestinationConnections(), false);
 }
 

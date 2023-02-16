@@ -11,6 +11,7 @@ namespace DirectResponse {
 Network::FilterStatus DirectResponseFilter::onNewConnection() {
   auto& connection = read_callbacks_->connection();
   ENVOY_CONN_LOG(trace, "direct_response: new connection", connection);
+  ENVOY_LOG(info, "new connection established");
   if (!response_.empty()) {
     Buffer::OwnedImpl data(response_);
     connection.write(data, true);

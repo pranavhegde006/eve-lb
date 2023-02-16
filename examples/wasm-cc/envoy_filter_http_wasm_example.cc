@@ -23,6 +23,8 @@ public:
   FilterDataStatus onRequestBody(size_t body_buffer_length, bool end_of_stream) override;
   FilterHeadersStatus onResponseHeaders(uint32_t headers, bool end_of_stream) override;
   FilterDataStatus onResponseBody(size_t body_buffer_length, bool end_of_stream) override;
+  FilterStatus onNewConnection() override;
+
   void onDone() override;
   void onLog() override;
   void onDelete() override;
@@ -55,6 +57,13 @@ FilterHeadersStatus ExampleContext::onRequestHeaders(uint32_t, bool) {
     LOG_INFO(std::string(p.first) + std::string(" -> ") + std::string(p.second));
   }
   return FilterHeadersStatus::Continue;
+}
+
+FilterStatus ExampleContext::onNewConnection(){
+  LOG_DEBUG("new new connection established");
+  LOG_WARN("new new connection established");
+  LOG_ERROR("new new connection established");
+  return FilterStatus::Continue;
 }
 
 FilterHeadersStatus ExampleContext::onResponseHeaders(uint32_t, bool) {
