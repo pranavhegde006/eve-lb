@@ -19,28 +19,11 @@ public:
     ENVOY_LOG(info, "ITS reaching callback");
     callbacks_ = &callbacks;
   }
-  Network::FilterStatus onRead(Buffer::Instance& data, bool end_stream) override {
-    ENVOY_LOG(info, "its reaching eve_lb");
-    StreamInfo::FilterState& filter_state = decoder_callbacks_->streamInfo().filterState();
-    std::string new_cluster_name = "inspect";
-    filter_state.setData("eve_lb.inspect", std::make_unique<Envoy::StreamInfo::StringAccessorImpl>(new_cluster_name), StreamInfo::FilterState::StateType::Mutable);
-
-    // Route the request to the new cluster
-    router::RouteConstSharedPtr new_route = decoder_callbacks_->route()->routeEntry()->cluster().clusterName(new_cluster_name);
-    decoder_callbacks_->streamInfo().setRouteEntry(new_route);
-
-    // Continue processing the request
-    return Network::FilterStatus::Continue;
+  
+    Network::FilterStatus onData(Buffer::Instance&, bool) override{
+      ENVOY_LOG(info, "pranav connection established");
+      return Network::FilterStatus::Continue;
     }
-
-    // Create a new destination address.
-    // auto new_address = std::make_unique<Address::Ipv4Instance>("localhost", 9003);
-
-    // // Update the destination address of the connection.
-    // socket.setRemoteAddress(std::move(new_address));
-    
-    // // Continue the filter chain.
-    // return Network::FilterStatus::StopIteration;
   }
   void initializeReadFilterCallbacks(Network::ReadFilterCallbacks& callbacks) override {
     read_callbacks_ = &callbacks;

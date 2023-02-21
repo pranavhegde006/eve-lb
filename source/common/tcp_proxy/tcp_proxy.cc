@@ -1,5 +1,5 @@
 #include "source/common/tcp_proxy/tcp_proxy.h"
-
+#include <netinet/tcp.h>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -412,6 +412,9 @@ Network::FilterStatus Filter::establishUpstreamConnection() {
   }
 
   auto& downstream_connection = read_callbacks_->connection();
+  // downstream_connection.streamInfo().getRouteName();
+  // auto route_name = downstream_connection.streamInfo().getRouteName();
+  // ENVOY_LOG(info, "pran connection2, addr: {}", route_name.value_or("unknown"));
   auto& filter_state = downstream_connection.streamInfo().filterState();
   if (!filter_state->hasData<Network::ProxyProtocolFilterState>(
           Network::ProxyProtocolFilterState::key())) {
@@ -646,6 +649,20 @@ void Filter::onConnectTimeout() {
 Network::FilterStatus Filter::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_CONN_LOG(trace, "downstream connection received {} bytes, end_stream={}",
                  read_callbacks_->connection(), data.length(), end_stream);
+
+
+
+  // GET TCP PAYLOAD
+  // const uint8_t* payload = static_cast<const uint8_t*>(data.linearize(data.length()));
+  // ENVOY_LOG(info, "TCP Payload:");
+  // for (size_t i = 0; i < data.length(); i++) {
+  //   ENVOY_LOG(info, "{:02x}", payload[i]);
+  // }
+
+  // PRINTS THE CURRENTLY SELECTED ENDPOINT IN THE DEFAULT CLUSTER
+  ENVOY_LOG(info, "upstream host addresss: {}", read_callbacks_->upstreamHost()->address()->asString());
+
+
   getStreamInfo().getDownstreamBytesMeter()->addWireBytesReceived(data.length());
   if (upstream_) {
     getStreamInfo().getUpstreamBytesMeter()->addWireBytesSent(data.length());
@@ -656,10 +673,35 @@ Network::FilterStatus Filter::onData(Buffer::Instance& data, bool end_stream) {
   // destroyed, there should be no further reads as well.
   ASSERT(0 == data.length());
   resetIdleTimer(); // TODO(ggreenway) PERF: do we need to reset timer on both send and receive?
+
+
+  // pranav changes
+  // read_callbacks_->connection().streamInfo().setRouteName("inspect");
+
+  // Set the new route name for the downstream connection.
+  // downstream_connection.streamInfo().setRouteName("inspect");
+
   return Network::FilterStatus::StopIteration;
 }
 
+
 Network::FilterStatus Filter::onNewConnection() {
+  // read_callbacks_->connection().streamInfo().upstreamClusterInfo()->name() = "inspect";
+  // std::string cluster_name = read_callbacks_->connection().streamInfo().downstreamConnection()->localAddress()->asString();
+
+  // std::string downstream_address = read_callbacks_->connection().dispatcher().clusterManager().get(cluster_name)->loadBalancer().chooseHost(nullptr)->address()->asString();
+  
+  // std::string destination_address = read_callbacks_->socket().connectionInfoProvider().remoteAddress()->asString();
+  // ENVOY_LOG(info, "pranav new conn, dest addr: {}", destination_address);
+  // std::string cluster_name1 = read_callbacks_
+
+
+  // std::string clusterName = read_callbacks_->connection().streamInfo()
+  // ENVOY_LOG(info, "pranav new conn, dest cluster: {}", cluster_name1);
+
+
+
+
   if (config_->maxDownstreamConnectionDuration()) {
     connection_duration_timer_ = read_callbacks_->connection().dispatcher().createTimer(
         [this]() -> void { onMaxDownstreamConnectionDuration(); });
@@ -686,6 +728,9 @@ Network::FilterStatus Filter::onNewConnection() {
 bool Filter::startUpstreamSecureTransport() { return upstream_->startUpstreamSecureTransport(); }
 
 void Filter::onDownstreamEvent(Network::ConnectionEvent event) {
+  // std::string destination_address = getStreamInfo().downstreamAddressProvider().localAddress()->asString();
+  // ENVOY_LOG(info, "pranav new conn, dest addr: {}", destination_address);
+
   if (event == Network::ConnectionEvent::LocalClose ||
       event == Network::ConnectionEvent::RemoteClose) {
     downstream_closed_ = true;
@@ -720,6 +765,17 @@ void Filter::onDownstreamEvent(Network::ConnectionEvent event) {
 }
 
 void Filter::onUpstreamData(Buffer::Instance& data, bool end_stream) {
+  // std::string dest_cluster;
+  // if(read_callbacks_->upstreamHost() == nullptr) dest_cluster = "tbd";
+  // dest_cluster = read_callbacks_->upstreamHost()->cluster().name();
+  // ENVOY_LOG(info, "pranav upstream cluster {}", dest_cluster);
+
+  // const uint8_t* payload = static_cast<const uint8_t*>(data.linearize(data.length()));
+  // ENVOY_LOG(info, "TCP Payload:");
+  // for (size_t i = 0; i < data.length(); i++) {
+  //   ENVOY_LOG(info, "{:02x}", payload[i]);
+  // }
+
   ENVOY_CONN_LOG(trace, "upstream connection received {} bytes, end_stream={}",
                  read_callbacks_->connection(), data.length(), end_stream);
   getStreamInfo().getUpstreamBytesMeter()->addWireBytesReceived(data.length());
@@ -811,6 +867,7 @@ void Filter::onMaxDownstreamConnectionDuration() {
       Network::ConnectionCloseType::NoFlush,
       StreamInfo::LocalCloseReasons::get().MaxConnectionDurationReached);
 }
+
 
 void Filter::onAccessLogFlushInterval() {
   for (const auto& access_log : config_->accessLogs()) {

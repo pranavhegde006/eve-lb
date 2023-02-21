@@ -14,7 +14,7 @@ envoy_extension_package()
 envoy_cc_library(
     name = "eve_lb",
     srcs = ["eve_lb.cc"],
-    hdrs = ["eve_lb1.h"],
+    hdrs = ["eve_lb.h"],
     deps = [
         "//envoy/network:connection_interface",
         "//envoy/network:filter_interface",
